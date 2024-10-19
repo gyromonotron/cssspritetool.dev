@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "watch": "npx tailwindcss -i ./src/i.css -o ./src/o.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.9",
+    "tailwindcss": "^3.4.13"
+  },
+  "dependencies": {
+    "preline": "^2.5.0"
+  }
+}
