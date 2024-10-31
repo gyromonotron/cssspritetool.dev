@@ -1,0 +1,172 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Parameters": {
+    "BucketName": {
+      "Type": "String",
+      "Description": "The name of the S3 bucket to store the objects"
+    },
+    "AllowedExtensions": {
+      "Type": "String",
+      "Description": "The allowed extensions for the images"
+    },
+    "AllowedTotalFiles": {
+      "Type": "Number",
+      "Description": "The allowed total files for the images"
+    }
+  },
+  "Resources": {
+    "SpriteGenerateFunctionFunctionPostFunctionHandlerGenerated": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Runtime": "dotnet8",
+        "CodeUri": ".",
+        "MemorySize": 512,
+        "Timeout": 30,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole"
+        ],
+        "PackageType": "Zip",
+        "Handler": "SpriteGenerateFunction",
+        "Environment": {
+          "Variables": {
+            "ANNOTATIONS_HANDLER": "PostFunctionHandler",
+            "AppSettings__BucketName": {
+              "Ref": "BucketName"
+            },
+            "AppSettings__AllowedExtensions": {
+              "Ref": "AllowedExtensions"
+            },
+            "AppSettings__AllowedTotalFiles": {
+              "Ref": "AllowedTotalFiles"
+            }
+          }
+        },
+        "FunctionUrlConfig": {
+          "AuthType": "AWS_IAM"
+        }
+      }
+    },
+    "CloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Origins": [
+            {
+              "DomainName": {
+                "Fn::Select": [
+                  2,
+                  {
+                    "Fn::Split": [
+                      "/",
+                      {
+                        "Fn::GetAtt": [
+                          "SpriteGenerateFunctionFunctionPostFunctionHandlerGeneratedUrl",
+                          "FunctionUrl"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "Id": "MyCFNToLambdaOrigin",
+              "CustomOriginConfig": {
+                "OriginProtocolPolicy": "https-only",
+                "OriginSSLProtocols": [
+                  "TLSv1.2"
+                ],
+                "OriginKeepaliveTimeout": 60
+              },
+              "OriginAccessControlId": {
+                "Ref": "CloudFrontOriginAccessControl"
+              }
+            }
+          ],
+          "Enabled": true,
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "MyCFNToLambdaOrigin",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": [
+              "GET",
+              "HEAD",
+              "OPTIONS",
+              "PUT",
+              "POST",
+              "PATCH",
+              "DELETE"
+            ],
+            "CachePolicyId": {
+              "Ref": "CachingDisabledPolicy"
+            },
+            "ForwardedValues": {
+              "QueryString": true
+            }
+          },
+          "ViewerCertificate": {
+            "CloudFrontDefaultCertificate": true,
+            "MinimumProtocolVersion": "TLSv1.2_2021"
+          },
+          "HttpVersion": "http2",
+          "DefaultRootObject": "index.html",
+          "PriceClass": "PriceClass_All"
+        }
+      }
+    },
+    "LambdaInvokePermissionForCloudFront": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SpriteGenerateFunctionFunctionPostFunctionHandlerGenerated"
+        },
+        "Action": "lambda:InvokeFunctionUrl",
+        "Principal": "cloudfront.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+        },
+        "SourceAccount": {
+          "Fn::Sub": "${AWS::AccountId}"
+        }
+      }
+    },
+    "CloudFrontOriginAccessControl": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-oac-for-lambda-url"
+          },
+          "SigningBehavior": "always",
+          "OriginAccessControlOriginType": "lambda",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "CachingDisabledPolicy": {
+      "Type": "AWS::CloudFront::CachePolicy",
+      "Properties": {
+        "CachePolicyConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-cache-policy"
+          },
+          "DefaultTTL": 0,
+          "MinTTL": 0,
+          "MaxTTL": 0,
+          "ParametersInCacheKeyAndForwardedToOrigin": {
+            "EnableAcceptEncodingBrotli": false,
+            "EnableAcceptEncodingGzip": false,
+            "HeadersConfig": {
+              "HeaderBehavior": "none"
+            },
+            "CookiesConfig": {
+              "CookieBehavior": "none"
+            },
+            "QueryStringsConfig": {
+              "QueryStringBehavior": "none"
+            }
+          }
+        }
+      }
+    }
+  },
+  "Description": "This template is partially managed by Amazon.Lambda.Annotations (v1.5.2.0)."
+}

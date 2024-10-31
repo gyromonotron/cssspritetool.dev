@@ -1,0 +1,21 @@
+
+{
+    "Information" : [
+        "This file provides default values for the deployment wizard inside Visual Studio and the AWS Lambda commands added to the .NET Core CLI.",
+        "To learn more about the Lambda commands with the .NET Core CLI execute the following command at the command line in the project root directory.",
+        "dotnet lambda help",
+        "All the command line options for the Lambda command can be specified in this file."
+    ],
+    "profile"     : "gyromonotron",
+    "region"      : "us-east-1",
+    "configuration" : "Release",
+    "function-runtime" : "dotnet8",
+    "function-memory-size" : 512,
+    "function-timeout"     : 30,
+    "function-handler"     : "SpriteGenerateFunction",
+    "msbuild-parameters"   : "--self-contained true",
+    "template"             : "serverless.template",
+    "s3-bucket"            : "appcomposer-qhegt8qemxgd6wqo-us-east-1",
+    "template-parameters"  : "\"BucketName\"=\"csspriter\";\"AllowedExtensions\"=\".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif\";\"AllowedTotalFiles\"=\"50\"",
+    "stack-name"           : "CSSSpriter-upload"
+}

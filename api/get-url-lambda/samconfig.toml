@@ -4,6 +4,9 @@ version = 0.1
 
 [default.global.parameters]
 stack_name = "get-url-lambda"
+parameter_overrides=[
+  "BucketName=cssspriter",
+]
 
 [default.build.parameters]
 cached = true

@@ -1,7 +1,5 @@
 using Amazon.Lambda.Serialization.SystemTextJson;
 using LambdaApi;
-using LambdaApi.Dao;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 builder.Configuration

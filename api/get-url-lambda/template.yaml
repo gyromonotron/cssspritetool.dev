@@ -45,7 +45,7 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Select [2, !Split ["/", !GetAtt GetUrlFunction.FunctionUrl]] 
+          - DomainName: !Select [2, !Split ["/", !GetAtt GetUrlFunctionUrl.FunctionUrl]] 
             Id: MyCFNToLambdaOrigin
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
@@ -75,11 +75,11 @@ Resources:
         DefaultRootObject: index.html
         PriceClass: PriceClass_All
 
-  # Permission to invoke the Lambda function from the CloudFront Distrinbution
+  # Permission to invoke the Lambda function from the CloudFront Distribution
   LambdaInvokePermissionForCloudFront:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref MyCFNToLambda
+      FunctionName: !Ref GetUrlFunction
       Action: lambda:InvokeFunctionUrl
       Principal: "cloudfront.amazonaws.com"
       SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
@@ -124,7 +124,7 @@ Outputs:
     Value: !GetAtt CloudFrontDistribution.DomainName
   LambdaFunctionDomain:
     Description: Lambda Function URL domain.
-    Value: !Select [2, !Split ["/", !GetAtt GetUrlFunction.FunctionUrl]]
+    Value: !Select [2, !Split ["/", !GetAtt GetUrlFunctionUrl.FunctionUrl]]
   LambdaFunctionUrl:
     Description: "The Lambda Function URL"
-    Value: !GetAtt GetUrlFunction.FunctionUrl
+    Value: !GetAtt GetUrlFunctionUrl.FunctionUrl

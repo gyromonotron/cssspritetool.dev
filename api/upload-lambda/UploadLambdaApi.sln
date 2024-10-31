@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LambdaApi", "LambdaApi\LambdaApi.csproj", "{34C165AC-1357-4BEB-A671-F62FC762472B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpriteGenerateFunction", "SpriteGenerateFunction\SpriteGenerateFunction.csproj", "{05FE6714-A094-476E-9456-A999A66BB9B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{34C165AC-1357-4BEB-A671-F62FC762472B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34C165AC-1357-4BEB-A671-F62FC762472B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34C165AC-1357-4BEB-A671-F62FC762472B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34C165AC-1357-4BEB-A671-F62FC762472B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05FE6714-A094-476E-9456-A999A66BB9B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05FE6714-A094-476E-9456-A999A66BB9B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05FE6714-A094-476E-9456-A999A66BB9B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05FE6714-A094-476E-9456-A999A66BB9B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
