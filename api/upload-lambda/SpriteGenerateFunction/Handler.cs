@@ -1,6 +1,5 @@
 ﻿using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.Core;
-using LambdaApi.Dao;
 using Microsoft.Extensions.Configuration;
 using RectpackSharp;
 using SkiaSharp;

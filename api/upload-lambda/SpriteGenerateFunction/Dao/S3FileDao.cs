@@ -27,7 +27,6 @@ public class S3FileDao
         return response.ResponseStream;
     }
 
-    // get the streams of multiple files in S3 buckets in parallel
     public async Task<Dictionary<string, Stream>> GetStreamsAsync(IEnumerable<string> keys)
     {
         var tasks = keys.Select(async key =>
@@ -48,47 +47,35 @@ public class S3FileDao
 
     public async Task<Dictionary<string, Stream>> GetStreamsAsync(IEnumerable<string> keys, int maxDegreeOfParallelism)
     {
-        try
+        var tasks = keys.Select(async key =>
         {
-            var tasks = keys.Select(async key =>
+            var request = new GetObjectRequest
             {
-                var request = new GetObjectRequest
-                {
-                    BucketName = _bucket,
-                    Key = key
-                };
+                BucketName = _bucket,
+                Key = key
+            };
 
-                Console.WriteLine($"Downloading {key}");
-                var response = await _client.GetObjectAsync(request);
-                Console.WriteLine($"Downloaded {key}");
-                using (var hashStream = response.ResponseStream)
-                {
-                    var memoryStream = new MemoryStream();
-                    await hashStream.CopyToAsync(memoryStream);
-                    return (key, memoryStream);
-                }
-            });
-
-            var results = new List<(string, Stream)>();
-            var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
-            foreach (var task in tasks)
+            var response = await _client.GetObjectAsync(request);
+            using (var hashStream = response.ResponseStream)
             {
-                await semaphore.WaitAsync();
-                var result = await task;
-                results.Add(result);
-                semaphore.Release();
+                var memoryStream = new MemoryStream();
+                await hashStream.CopyToAsync(memoryStream);
+                return (key, memoryStream);
             }
+        });
 
-            Console.WriteLine("All files downloaded");
-            return results.ToDictionary(x => x.Item1, x => x.Item2);
-        }
-        catch (Exception ex)
+        var results = new List<(string, Stream)>();
+        var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
+        foreach (var task in tasks)
         {
-            Console.WriteLine(ex.Message);
-            throw;
+            await semaphore.WaitAsync();
+            var result = await task;
+            results.Add(result);
+            semaphore.Release();
         }
-    }
 
+        return results.ToDictionary(x => x.Item1, x => x.Item2);
+    }
 
     public async Task<string> UploadStreamAsync(Stream stream, string ext)
     {

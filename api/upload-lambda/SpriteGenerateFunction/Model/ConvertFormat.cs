@@ -1,14 +1,12 @@
 ﻿namespace SpriteGenerateFunction.Model;
 
-public class ConvertFormat
+public class ConvertFormat(string name)
 {
     public static ConvertFormat Unsupported => new("unsupported");
     public static ConvertFormat WebP => new("webp");
     public static ConvertFormat Png => new("png");
 
-    public string Name { get; }
-
-    public ConvertFormat(string name) => Name = name;
+    public string Name { get; } = name;
 
     public static ConvertFormat FromName(string name)
     {

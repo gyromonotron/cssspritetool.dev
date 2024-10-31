@@ -11,4 +11,12 @@ public class SpriteResponse
     {
         SpriteUrl = Css = Html = ZipUrl = string.Empty;
     }
+
+    public SpriteResponse(string spriteUrl, string css, string html, string zipUrl)
+    {
+        SpriteUrl = spriteUrl;
+        Css = css;
+        Html = html;
+        ZipUrl = zipUrl;
+    }
 }

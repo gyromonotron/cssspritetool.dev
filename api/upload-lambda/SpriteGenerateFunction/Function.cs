@@ -14,14 +14,9 @@ using System.Text.Json.Serialization;
 
 namespace SpriteGenerateFunction;
 
-public class Function
+public class Function(IConfiguration configuration)
 {
-    private readonly IConfiguration _configuration;
-
-    public Function(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
+    private readonly IConfiguration _configuration = configuration;
 
     [LambdaFunction]
     [RestApi(LambdaHttpMethod.Post, "/")]

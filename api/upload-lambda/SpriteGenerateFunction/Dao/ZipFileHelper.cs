@@ -1,8 +1,8 @@
 ﻿using System.IO.Compression;
 
-namespace LambdaApi.Dao
+namespace SpriteGenerateFunction.Dao
 {
-    public static class ZipFileHelper 
+    public static class ZipFileHelper
     {
         public static ZipArchive CreateZipArchive(Stream stream)
         {
