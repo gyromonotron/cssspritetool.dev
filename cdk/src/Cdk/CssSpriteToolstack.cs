@@ -202,14 +202,25 @@ namespace Cdk
 
             #region CloudFront
 
-            var cfnOriginAccessControl = new CfnOriginAccessControl(this, "OriginAccessControl", new CfnOriginAccessControlProps
+            var cfnS3OriginAccessControl = new CfnOriginAccessControl(this, "S3OriginAccessControl", new CfnOriginAccessControlProps
             {
                 OriginAccessControlConfig = new OriginAccessControlConfigProperty
                 {
-                    Name = "CssSpriteTool-OriginAccessControl",
+                    Name = "CssSpriteTool-S3-OriginAccessControl",
                     OriginAccessControlOriginType = "s3",
                     SigningBehavior = "always",
                     SigningProtocol = "sigv4"
+                }
+            });
+
+            var cfnLambdaOriginAccessControl = new CfnOriginAccessControl(this, "LambdaOriginAccessControl", new CfnOriginAccessControlProps
+            {
+                OriginAccessControlConfig = new OriginAccessControlConfigProperty
+                {
+                    Name = "CssSpriteTool-Lambda-OriginAccessControl",
+                    OriginAccessControlOriginType = "lambda",
+                    SigningBehavior = "always",
+                    SigningProtocol = "sigv4",
                 }
             });
 
@@ -267,7 +278,7 @@ namespace Cdk
                         Origin = new FunctionUrlOrigin(spriteGenerateLambda_FunctionUrl, new FunctionUrlOriginProps
                         {
                             OriginId = "SpriteGenerate-Lambda",
-                            ReadTimeout = Duration.Seconds(60)
+                            ReadTimeout = Duration.Seconds(60),
                         }),
                         AllowedMethods = AllowedMethods.ALLOW_ALL,
                         CachePolicy = CachePolicy.CACHING_DISABLED,
@@ -294,8 +305,30 @@ namespace Cdk
 
             // workaround using the L1 construct to attach the OriginAccessControl to the CloudFront Distribution
             var l1CfnDistribution = cfnDistribution.Node.DefaultChild as CfnDistribution;
-            l1CfnDistribution.AddPropertyOverride("DistributionConfig.Origins.0.OriginAccessControlId", cfnOriginAccessControl.AttrId);
-            l1CfnDistribution.AddPropertyOverride("DistributionConfig.Origins.1.OriginAccessControlId", cfnOriginAccessControl.AttrId);
+            l1CfnDistribution.AddPropertyOverride("DistributionConfig.Origins.0.OriginAccessControlId", cfnS3OriginAccessControl.AttrId);
+            l1CfnDistribution.AddPropertyOverride("DistributionConfig.Origins.1.OriginAccessControlId", cfnS3OriginAccessControl.AttrId);
+            l1CfnDistribution.AddPropertyOverride("DistributionConfig.Origins.2.OriginAccessControlId", cfnLambdaOriginAccessControl.AttrId);
+            l1CfnDistribution.AddPropertyOverride("DistributionConfig.Origins.3.OriginAccessControlId", cfnLambdaOriginAccessControl.AttrId);
+
+            #endregion
+
+            #region Lambda Permissions
+
+            getPostUrlLambda.AddPermission("AllowCloudFront", new Permission
+            {
+                Principal = new ServicePrincipal("cloudfront.amazonaws.com"),
+                Action = "lambda:InvokeFunctionUrl",
+                SourceArn = $"arn:aws:cloudfront::{this.Account}:distribution/{cfnDistribution.DistributionId}",
+                SourceAccount = this.Account
+            });
+
+            spriteGenerateLambda.AddPermission("AllowCloudFront", new Permission
+            {
+                Principal = new ServicePrincipal("cloudfront.amazonaws.com"),
+                Action = "lambda:InvokeFunctionUrl",
+                SourceArn = $"arn:aws:cloudfront::{this.Account}:distribution/{cfnDistribution.DistributionId}",
+                SourceAccount = this.Account
+            });
 
             #endregion
         }
