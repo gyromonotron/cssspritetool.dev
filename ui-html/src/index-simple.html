@@ -5,18 +5,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="FREE Online tool for generating CSS sprites with. Supports WEBP, PNG, JPEG, GIF, BMP, HEIC image formats. Merge multiple images into a sprite fast and easy." />
+    content="FREE Online tool for generating CSS sprites. Supports WEBP, PNG, JPEG, GIF, BMP, HEIC image formats. Merge multiple images into a sprite fast and easy." />
   <meta name="author" content="CSS Sprite Generator" />
   <meta name="keywords" content="css,sprite,image,generator,tool,online,webp,png" />
 
   <link rel="icon" href="favicon.ico" />
   <link rel="stylesheet" href="o.css" />
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/gradient-dark.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/gradient-dark.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/css.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/xml.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
     function tabs() {
       return {
@@ -32,6 +32,16 @@
       }
     };
 
+    function calculateSha256(body) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(body);
+      return crypto.subtle.digest('SHA-256', data).then((buffer) => {
+        const hashArray = Array.from(new Uint8Array(buffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+      });
+    }
+
     function spriteForm() {
       return {
         formData: {
@@ -39,55 +49,90 @@
           files: [],
         },
 
+        getUrlApi: 'https://d1w4q4x2bl8828.cloudfront.net/api/url',
+        processApi: 'https://d1w4q4x2bl8828.cloudfront.net/api/process',
+
         state: 'idle',
         buttonLabel: 'Submit',
         message: '',
 
-        result: {},
+        result: {
+          SpriteUrl: '',
+          Css: '',
+          Html: '',
+          ZipUrl: '',
+        },
 
-        submitForm() {
-          this.buttonLabel = 'Submitting...'
+        async submitForm() {
+          this.buttonLabel = 'Submitting...';
           this.state = 'loading';
-          this.message = ''
+          this.message = '';
 
+          if (this.formData.files.length === 0) {
+            this.showError('Please upload at least one image.');
+            return;
+          }
+
+          try {
+            const urlJson = await this.fetchUrlJson();
+            await this.uploadFiles(urlJson);
+            await this.processFiles(urlJson);
+            confetti();
+            hljs.highlightAll();
+            this.state = 'success';
+          } catch (error) {
+            this.showError(error.message);
+          } finally {
+            this.buttonLabel = 'Submit';
+          }
+        },
+
+        async fetchUrlJson() {
+          const response = await fetch(this.getUrlApi, { method: 'GET' });
+          if (!response.ok) throw new Error('Something went wrong. Please try again later.');
+          return response.json();
+        },
+
+        async uploadFiles(urlJson) {
+          const promises = this.formData.files.map(file => this.uploadFile(file, urlJson));
+          await Promise.all(promises);
+        },
+
+        async uploadFile(file, urlJson) {
           const formData = new FormData();
-          this.formData.files.forEach(file => {
-            formData.append('files', file);
-          });
-          formData.append('format', this.formData.format);
+          Object.entries(urlJson.fields).forEach(([key, value]) => formData.append(key, value));
+          formData.append('file', file);
 
-          fetch('http://localhost:59877/upload', {
+          const response = await fetch(urlJson.url, { method: 'POST', body: formData });
+          if (!response.ok) throw new Error(await response.text());
+        },
+
+        async processFiles(urlJson) {
+          const fileKeys = this.formData.files.map(file => urlJson.fields.key.replace('${filename}', file.name));
+          const bodyString = JSON.stringify({ files: fileKeys, format: this.formData.format });
+
+          const response = await fetch(this.processApi, {
             method: 'POST',
-            body: formData,
-          })
-            .then((res) => {
-              if (!res.ok) {
-                return res.text().then(error => ({ error }));
-              }
-              return res.json();
-            })
-            .then((r) => {
-              if (r.error) {
-                this.message = r.error;
-                this.state = 'error';
-                return;
-              }
+            headers: {
+              'Content-Type': 'application/json',
+              'x-amz-content-sha256': await calculateSha256(bodyString),
+            },
+            body: bodyString,
+          });
 
-              this.state = 'success';
-              this.result = r;
-            })
-            .then(hljs.highlightAll())
-            .catch((e) => {
-              this.message = 'Something went wrong. Please try again later.';
-            })
-            .finally(() => {
-              this.buttonLabel = 'Submit'
-            })
-        }
+          if (!response.ok) throw new Error('Something went wrong. Please try again later.');
+          this.result = await response.json();
+        },
+
+        showError(message) {
+          this.message = message;
+          this.state = 'error';
+          this.buttonLabel = 'Submit'
+        },
+
       }
     } 
   </script>
-
   <title>CSS Sprite Generator</title>
 </head>
 
@@ -118,7 +163,7 @@
                 <span class="font-medium">What can this tool do?</span>
                 <ul class="mt-1.5 list-disc list-inside">
                   <li>Generate CSS sprites from multiple images in PNG, JPEG, GIF, BMP, HEIC formats</li>
-                  <li>Return sprites in PNG or WEBP format</li>
+                  <li>Return sprites in PNG or WebP format</li>
                   <li>Up to 25 images and 5MB each</li>
                 </ul>
               </div>
@@ -183,7 +228,7 @@
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M1 5h12m0 0L9 1m4 4L9 9" />
                 </svg>
-                <svg x-show="state === 'loading'" aria-hidden="true" role="status"
+                <svg x-cloak x-show="state === 'loading'" aria-hidden="true" role="status"
                 class="inline w-4 h-4 ms-2 text-gray-200 animate-spin dark:text-gray-600" viewBox="0 0 100 101"
                 fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -195,7 +240,7 @@
               </svg>
               </button>
 
-              <div x-show="state === 'error'"
+              <div x-cloak x-show="state === 'error'"
                 class="flex flex-auto items-center p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
                 role="alert">
                 <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -210,14 +255,14 @@
               </div>
             </div>
 
-            <div id="output" x-show="state === 'success'">
+            <div id="output" x-cloak x-show="state === 'success'">
               <div class="inline-flex items-center justify-center w-full">
                 <hr class="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
                 <span
                   class="absolute px-3 font-semibold text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-neutral-950 ">OUTPUT</span>
               </div>
             </div>
-            <div x-show="state === 'success'" x-data="{ tab: 'sprite' }">
+            <div x-cloak x-show="state === 'success'" x-data="{ tab: 'sprite' }">
               <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
                 <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="sprite-tab" role="tablist">
                   <li class="me-2" role="presentation">
@@ -264,10 +309,10 @@
                     class="object-cover rounded" alt="Generated CSS Sprite" id="sprite" role="tabpanel"
                     aria-labelledby="sprite-tab" />
                   <pre x-show="tab === 'css'" class="grid">
-                        <code x-text="result.Css" class="language-css"></code>
+                    <code x-text="result.Css" class="language-css"></code>
                   </pre>
                   <pre x-show="tab === 'html'" class="grid">
-                      <code x-text="result.Html" class="language-html"></code>
+                    <code x-text="result.Html" class="language-html"></code>
                   </pre>
                 </div>
               </div>
