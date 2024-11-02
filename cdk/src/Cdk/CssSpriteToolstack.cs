@@ -17,43 +17,13 @@ namespace Cdk
     {
         internal CssSpriteToolstack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
-            #region Parameters 
+            #region Context Variables
 
-            var bucket_name = new CfnParameter(this, "BucketName", new CfnParameterProps
-            {
-                Type = "String",
-                Description = "The name of the S3 for website hosting",
-                Default = "cssspriter"
-            });
-
-            var allowed_extensions = new CfnParameter(this, "AllowedExtensions", new CfnParameterProps
-            {
-                Type = "String",
-                Description = "The allowed file extensions for the CSS Spriter",
-                Default = ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif"
-            });
-
-            var allowed_total_files = new CfnParameter(this, "AllowedTotalFiles", new CfnParameterProps
-            {
-                Type = "Number",
-                Description = "The allowed total files for the CSS Spriter",
-                Default = 50
-            });
-
-            var allowed_file_size = new CfnParameter(this, "AllowedFileSize", new CfnParameterProps
-            {
-                Type = "Number",
-                Description = "The allowed file size for the CSS Spriter",
-                Default = 5242880
-            });
-
-            var lambdas_architecture = new CfnParameter(this, "LambdasArchitecture", new CfnParameterProps
-            {
-                Type = "String",
-                Description = "The architecture of the Lambdas",
-                Default = "X86_64",
-                AllowedValues = new[] { "X86_64", "ARM_64" }
-            });
+            var bucket_name = this.Node.TryGetContext("BucketName") as string ?? "cssspriter";
+            var allowed_extensions = this.Node.TryGetContext("AllowedExtensions") as string ?? ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif";
+            var allowed_total_files = this.Node.TryGetContext("AllowedTotalFiles") as int? ?? 50;
+            var allowed_file_size = this.Node.TryGetContext("AllowedFileSize") as int? ?? 5242880;
+            var lambdas_architecture = this.Node.TryGetContext("LambdasArchitecture") as string ?? "X86_64";
 
             #endregion
 
@@ -61,7 +31,7 @@ namespace Cdk
 
             var s3SiteBucket = new Bucket(this, "SiteBucket", new BucketProps
             {
-                BucketName = bucket_name.ValueAsString,
+                BucketName = bucket_name,
                 RemovalPolicy = RemovalPolicy.DESTROY,
                 BlockPublicAccess = BlockPublicAccess.BLOCK_ALL,
                 LifecycleRules =
@@ -112,7 +82,7 @@ namespace Cdk
 
             #region Lambdas
 
-            var lambdaArchitecture = (lambdas_architecture.ValueAsString == "X86_64") ? Architecture.X86_64 : Architecture.ARM_64;
+            var lambdaArchitecture = lambdas_architecture == "X86_64" ? Architecture.X86_64 : Architecture.ARM_64;
             var getPostUrlLambda = new Function(this, "GetPostUrlLambda", new FunctionProps
             {
                 FunctionName = "CssSpriteTool-GetPostUrlLambda",
@@ -126,8 +96,8 @@ namespace Cdk
                 Environment = new Dictionary<string, string>
                 {
                     ["BUCKET_NAME"] = s3SiteBucket.BucketName,
-                    ["ALLOWED_EXTENSIONS"] = allowed_extensions.ValueAsString,
-                    ["ALLOWED_FILE_SIZE"] = allowed_file_size.ValueAsString
+                    ["ALLOWED_EXTENSIONS"] = allowed_extensions,
+                    ["ALLOWED_FILE_SIZE"] = allowed_file_size.ToString()
                 }
             });
 
@@ -187,7 +157,6 @@ namespace Cdk
                         ]
                     }
                 }),
-
                 Architecture = lambdaArchitecture,
                 Handler = "SpriteGenerateFunction",
                 Runtime = Runtime.DOTNET_8,
@@ -197,9 +166,9 @@ namespace Cdk
                 Environment = new Dictionary<string, string>
                 {
                     ["ANNOTATIONS_HANDLER"] = "PostFunctionHandler",
-                    ["AppSettings__BucketName"] = s3SiteBucket.BucketName,
-                    ["AppSettings__AllowedExtensions"] = allowed_extensions.ValueAsString,
-                    ["AppSettings__AllowedTotalFiles"] = allowed_total_files.ValueAsString
+                    ["BucketName"] = s3SiteBucket.BucketName,
+                    ["AllowedExtensions"] = allowed_extensions,
+                    ["AllowedTotalFiles"] = allowed_total_files.ToString()
                 }
             });
 

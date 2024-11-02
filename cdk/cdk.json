@@ -15,6 +15,12 @@
     ]
   },
   "context": {
+    "BucketName": "cssspritetool.dev",
+    "AllowedExtensions": ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif",
+    "AllowedTotalFiles": 20,
+    "AllowedFileSize": 5242880,
+    "LambdasArchitecture": "X86_64",
+
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
     "@aws-cdk/core:checkSecretUsage": true,
     "@aws-cdk/core:target-partitions": [
