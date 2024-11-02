@@ -10,8 +10,6 @@ using static Amazon.CDK.AWS.CloudFront.CfnOriginAccessControl;
 using static Amazon.CDK.AWS.CloudFront.CfnDistribution;
 using Function = Amazon.CDK.AWS.Lambda.Function;
 using FunctionProps = Amazon.CDK.AWS.Lambda.FunctionProps;
-using Amazon.CDK.AWS.Logs;
-using System;
 
 namespace Cdk
 {
@@ -74,7 +72,17 @@ namespace Cdk
                         Enabled = true,
                         Expiration = Duration.Days(1)
                     }
-                ]
+                ],
+                Cors =
+                [
+                    new CorsRule
+                    {
+                        AllowedMethods = [HttpMethods.GET, HttpMethods.PUT, HttpMethods.POST],
+                        AllowedOrigins = ["*"],
+                        AllowedHeaders = ["*"],
+                        MaxAge = 3000
+                    }
+                ],
             });
 
             var getPostUrlLambdaRole = new Role(this, "GetPostUrlLambdaRole", new RoleProps
@@ -107,6 +115,7 @@ namespace Cdk
             var lambdaArchitecture = (lambdas_architecture.ValueAsString == "X86_64") ? Architecture.X86_64 : Architecture.ARM_64;
             var getPostUrlLambda = new Function(this, "GetPostUrlLambda", new FunctionProps
             {
+                FunctionName = "CssSpriteTool-GetPostUrlLambda",
                 Code = Code.FromAsset("../api/get-url-lambda/get-url-lambda"),
                 Architecture = lambdaArchitecture,
                 Handler = "app.lambda_handler",
@@ -119,15 +128,20 @@ namespace Cdk
                     ["BUCKET_NAME"] = s3SiteBucket.BucketName,
                     ["ALLOWED_EXTENSIONS"] = allowed_extensions.ValueAsString,
                     ["ALLOWED_FILE_SIZE"] = allowed_file_size.ValueAsString
-                },
-                LogRetention = RetentionDays.ONE_WEEK
+                }
             });
 
             var getPostUrlLambda_FunctionUrl = new FunctionUrl(this, "GetPostUrlLambdaFunctionUrl", new FunctionUrlProps
             {
                 Function = getPostUrlLambda,
                 AuthType = FunctionUrlAuthType.AWS_IAM,
-                InvokeMode = InvokeMode.BUFFERED
+                InvokeMode = InvokeMode.BUFFERED,
+                Cors = new FunctionUrlCorsOptions
+                {
+                    AllowedOrigins = ["*"],
+                    AllowedMethods = [HttpMethod.GET],
+                    AllowedHeaders = ["*"]
+                }
             });
 
             var spriteGenerateLambdaRole = new Role(this, "SpriteGenerateLambdaRole", new RoleProps
@@ -153,10 +167,9 @@ namespace Cdk
                 }
             });
 
-            //string linuxArchitectureFolder = (lambdas_architecture.ValueAsString == "X86_64") ? "linux-x64" : "linux-arm64";
             var spriteGenerateLambda = new Function(this, "SpriteGenerateLambda", new FunctionProps
             {
-                //Code = Code.FromAsset($"../api/sprite-generate-lambda/bin/Release/net8.0/{linuxArchitectureFolder}/publish"),
+                FunctionName = "CssSpriteTool-SpriteGenerateLambda",
                 Code = Code.FromAsset("../api/upload-lambda/SpriteGenerateFunction", new Amazon.CDK.AWS.S3.Assets.AssetOptions
                 {
                     Bundling = new BundlingOptions()
@@ -187,15 +200,20 @@ namespace Cdk
                     ["AppSettings__BucketName"] = s3SiteBucket.BucketName,
                     ["AppSettings__AllowedExtensions"] = allowed_extensions.ValueAsString,
                     ["AppSettings__AllowedTotalFiles"] = allowed_total_files.ValueAsString
-                },
-                LogRetention = RetentionDays.ONE_WEEK
+                }
             });
 
             var spriteGenerateLambda_FunctionUrl = new FunctionUrl(this, "SpriteGenerateLambdaFunctionUrl", new FunctionUrlProps
             {
                 Function = spriteGenerateLambda,
                 AuthType = FunctionUrlAuthType.AWS_IAM,
-                InvokeMode = InvokeMode.BUFFERED
+                InvokeMode = InvokeMode.BUFFERED,
+                Cors = new FunctionUrlCorsOptions
+                {
+                    AllowedOrigins = ["*"],
+                    AllowedMethods = [HttpMethod.POST],
+                    AllowedHeaders = ["*"]
+                }
             });
 
             #endregion
