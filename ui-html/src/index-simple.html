@@ -48,20 +48,17 @@
           format: 'webp',
           files: [],
         },
-
-        getUrlApi: 'https://d1w4q4x2bl8828.cloudfront.net/api/url',
-        processApi: 'https://d1w4q4x2bl8828.cloudfront.net/api/process',
-
-        state: 'idle',
-        buttonLabel: 'Submit',
-        message: '',
-
         result: {
           SpriteUrl: '',
           Css: '',
           Html: '',
           ZipUrl: '',
         },
+        getUrlApi: 'https://d1w4q4x2bl8828.cloudfront.net/api/url',
+        processApi: 'https://d1w4q4x2bl8828.cloudfront.net/api/process',
+        state: 'idle',
+        buttonLabel: 'Submit',
+        message: '',
 
         async submitForm() {
           this.buttonLabel = 'Submitting...';
@@ -120,7 +117,12 @@
             body: bodyString,
           });
 
-          if (!response.ok) throw new Error('Something went wrong. Please try again later.');
+          if (!response.ok) 
+          {
+            const error = await response.text();
+            throw new Error(error ?? 'Something went wrong. Please try again later.');
+          }
+
           this.result = await response.json();
         },
 
@@ -198,7 +200,7 @@
             </div>
 
             <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">UPLOAD IMAGES</h3>
-            <div class="flex items-center justify-center w-full mb-8">
+            <div class="flex items-center justify-center w-full mb-4">
               <label for="dropzone-file"
                 class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -216,7 +218,27 @@
                   x-on:change="formData.files = Object.values($event.target.files)" />
               </label>
             </div>
-
+            <div class="flex flex-wrap gap-2 mt-4 mb-4 preview-pattern h-[40px] max-h-[40px] overflow-y-auto 
+              [&::-webkit-scrollbar]:w-1
+              [&::-webkit-scrollbar-track]:rounded-full
+              [&::-webkit-scrollbar-track]:bg-gray-100
+              [&::-webkit-scrollbar-thumb]:rounded-full
+              [&::-webkit-scrollbar-thumb]:bg-gray-300
+              dark:[&::-webkit-scrollbar-track]:bg-neutral-700
+              dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
+              <template x-for="(file, index) in formData.files" :key="index">
+                  <div class="group relative" x-data="{ hover: false }" @mouseover="hover = true" @mouseleave="hover = false">
+                    <img :src="URL.createObjectURL(file)" class="object-cover w-10 h-10 rounded-lg cursor-pointer group-hover:grayscale" alt="to upload" />
+                    <button type="button" x-show="hover" @click="formData.files.splice(index, 1)"
+                      class="absolute bottom-2 left-2 z-5 p-1.5 text-white bg-red-500 rounded-full dark:bg-red-600"
+                      aria-label="Remove image">
+                      <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                      </svg>
+                    </button>
+                  </div>
+              </template>
+            </div>
             <div class="flex flex-row gap-6 max-h-[40px]">
               <button :disabled="state === 'loading'" type="submit"
                 :class="state === 'loading' 
@@ -365,9 +387,6 @@
             © 2024 _fastFoodCoding
           </p>
         </div>
-        <!-- End Col -->
-
-        <!-- List -->
         <ul class="flex flex-wrap items-center">
           <li class="inline-block pe-4 text-xs">
             <a class="text-xs text-gray-500 underline hover:text-gray-800 hover:decoration-2 focus:outline-none focus:decoration-2 dark:text-neutral-500 dark:hover:text-neutral-400"
@@ -376,7 +395,6 @@
             </a>
           </li>
         </ul>
-        <!-- End List -->
       </div>
     </div>
   </footer>
