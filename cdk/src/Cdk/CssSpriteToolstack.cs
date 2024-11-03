@@ -20,6 +20,7 @@ namespace Cdk
             #region Context Variables
 
             var bucket_name = this.Node.TryGetContext("BucketName") as string ?? "cssspriter";
+            var result_folder_path = this.Node.TryGetContext("ResultFolderPath") as string ?? "result/";
             var allowed_extensions = this.Node.TryGetContext("AllowedExtensions") as string ?? ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif";
             var allowed_total_files = this.Node.TryGetContext("AllowedTotalFiles") as int? ?? 50;
             var allowed_file_size = this.Node.TryGetContext("AllowedFileSize") as int? ?? 5242880;
@@ -96,6 +97,7 @@ namespace Cdk
                 Environment = new Dictionary<string, string>
                 {
                     ["BUCKET_NAME"] = s3SiteBucket.BucketName,
+                    ["RESULT_FOLDER_PATH"] = result_folder_path,
                     ["ALLOWED_EXTENSIONS"] = allowed_extensions,
                     ["ALLOWED_FILE_SIZE"] = allowed_file_size.ToString()
                 }
@@ -160,13 +162,14 @@ namespace Cdk
                 Architecture = lambdaArchitecture,
                 Handler = "SpriteGenerateFunction",
                 Runtime = Runtime.DOTNET_8,
-                Timeout = Duration.Seconds(30),
-                MemorySize = 512,
+                Timeout = Duration.Seconds(60),
+                MemorySize = 1024,
                 Role = spriteGenerateLambdaRole,
                 Environment = new Dictionary<string, string>
                 {
                     ["ANNOTATIONS_HANDLER"] = "PostFunctionHandler",
                     ["BucketName"] = s3SiteBucket.BucketName,
+                    ["ResultFolderPath"] = result_folder_path,
                     ["AllowedExtensions"] = allowed_extensions,
                     ["AllowedTotalFiles"] = allowed_total_files.ToString()
                 }

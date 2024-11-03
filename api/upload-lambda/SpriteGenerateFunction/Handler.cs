@@ -21,13 +21,15 @@ internal class Handler
         _logger = logger;
         _allowedExtensions = configuration["AllowedExtensions"] ?? throw new ArgumentNullException(nameof(configuration) + ".AllowedExtensions");
         _allowedTotalFiles = int.Parse(configuration["AllowedTotalFiles"] ?? throw new ArgumentNullException(nameof(configuration) + ".AllowedTotalFiles"));
-
+        
+        var resultFolderPath = configuration["ResultFolderPath"] ?? throw new ArgumentNullException(nameof(configuration) + ".ResultFolderPath");
         var bucketName = configuration["BucketName"] ?? throw new ArgumentNullException(nameof(configuration) + ".BucketName");
-        _s3DataAccess = new S3FileDao(bucketName);
+        _s3DataAccess = new S3FileDao(bucketName, resultFolderPath);
 
         _logger.LogLine($"Allowed extensions: {_allowedExtensions}");
         _logger.LogLine($"Allowed total files: {_allowedTotalFiles}");
         _logger.LogLine($"Bucket name: {bucketName}");
+        _logger.LogLine($"Result folder path: {resultFolderPath}");
         _logger.LogLine("Handler initialized");
     }
 

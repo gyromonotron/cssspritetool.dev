@@ -7,11 +7,13 @@ namespace SpriteGenerateFunction.Dao;
 public class S3FileDao
 {
     private readonly string _bucket;
+    private readonly string _resultFolderPath;
     private readonly AmazonS3Client _client;
 
-    public S3FileDao(string bucket)
+    public S3FileDao(string bucket, string resultFolderPath)
     {
         _bucket = bucket;
+        _resultFolderPath = resultFolderPath;
         _client = new AmazonS3Client();
     }
 
@@ -98,9 +100,9 @@ public class S3FileDao
         return await _client.GetPreSignedURLAsync(request);
     }
 
-    private static string GenerateKey(string extension)
+    private string GenerateKey(string extension)
     {
         var dateFolder = DateTime.Now.ToString("yyyyMMdd");
-        return $"{dateFolder}/Sprite_{Guid.NewGuid()}.{extension}";
+        return $"{_resultFolderPath}{dateFolder}/Sprite_{Guid.NewGuid()}.{extension}";
     }
 }

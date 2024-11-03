@@ -19,7 +19,8 @@ def lambda_handler(event, context):
     # get bucket name and object name from environment variables
     s3_client = boto3.client("s3")
     bucket_name = os.environ["BUCKET_NAME"]
-    folder_name = get_folder_key()
+    result_folder = os.environ["RESULT_FOLDER_PATH"]
+    folder_name = get_folder_key(result_folder)
 
     try:
         conditions = [
@@ -53,5 +54,6 @@ def lambda_handler(event, context):
     }
 
 
-def get_folder_key() -> str:
-    return time.strftime("%Y%m%d/") + uuid.uuid4().hex + "/"
+def get_folder_key(result_folder: str) -> str:
+    
+    return result_folder + time.strftime("%Y%m%d/") + uuid.uuid4().hex + "/"

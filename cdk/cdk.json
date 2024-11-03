@@ -16,6 +16,7 @@
   },
   "context": {
     "BucketName": "cssspritetool.dev",
+    "ResultFolderPath": "result/",
     "AllowedExtensions": ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif",
     "AllowedTotalFiles": 20,
     "AllowedFileSize": 5242880,
