@@ -3,7 +3,6 @@ import os
 import time
 import uuid
 import boto3
-from botocore.exceptions import ClientError
 
 
 def lambda_handler(event, context):
@@ -20,26 +19,28 @@ def lambda_handler(event, context):
     s3_client = boto3.client("s3")
     bucket_name = os.environ["BUCKET_NAME"]
     result_folder = os.environ["RESULT_FOLDER_PATH"]
+    allowed_file_size = int(os.environ["ALLOWED_FILE_SIZE"])
     folder_name = get_folder_key(result_folder)
 
     try:
         conditions = [
-            # ["starts-with", "$Content-Type", "image/"],
+            ["starts-with", "$Content-Type", "image/"],
             ["starts-with", "$key", folder_name],
-            ["content-length-range", 0, 52428800],  # 50MB
+            ["content-length-range", 1, allowed_file_size],
         ]
+
         response = s3_client.generate_presigned_post(
             Bucket=bucket_name,
             Key=folder_name + "${filename}",
             Fields=None,
             Conditions=conditions,
-            ExpiresIn=900,  # 15 minutes
+            ExpiresIn=300,  # 5 mins
         )
-    except ClientError as e:
+    except Exception as e:
         print(e)
         return {
             "statusCode": 500,
-            "body": json.dumps({"message": "Error generating presigned URL"}),
+            "body": json.dumps({"message": "Internal server error"}),
         }
 
     return {
@@ -55,5 +56,4 @@ def lambda_handler(event, context):
 
 
 def get_folder_key(result_folder: str) -> str:
-    
     return result_folder + time.strftime("%Y%m%d/") + uuid.uuid4().hex + "/"

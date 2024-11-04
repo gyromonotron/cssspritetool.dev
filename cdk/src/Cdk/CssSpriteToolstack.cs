@@ -21,9 +21,9 @@ namespace Cdk
 
             var bucket_name = this.Node.TryGetContext("BucketName") as string ?? "cssspriter";
             var result_folder_path = this.Node.TryGetContext("ResultFolderPath") as string ?? "result/";
-            var allowed_extensions = this.Node.TryGetContext("AllowedExtensions") as string ?? ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif";
+            var allowed_extensions = this.Node.TryGetContext("AllowedExtensions") as string ?? ".bmp, .jpg, .jpeg, .jpe, .jif, .jfif, .jfi, .png, .webp, .gif, .avif, .heic";
             var allowed_total_files = this.Node.TryGetContext("AllowedTotalFiles") as int? ?? 50;
-            var allowed_file_size = this.Node.TryGetContext("AllowedFileSize") as int? ?? 5242880;
+            var allowed_file_size = this.Node.TryGetContext("AllowedFileSize") as int? ?? 2 * 1024 * 1024;
             var lambdas_architecture = this.Node.TryGetContext("LambdasArchitecture") as string ?? "X86_64";
 
             #endregion
@@ -39,6 +39,7 @@ namespace Cdk
                 [
                     new LifecycleRule
                     {
+                        Id = "DeleteObjectsAfterOneDay",
                         Prefix = "r/",
                         Enabled = true,
                         Expiration = Duration.Days(1)
@@ -171,7 +172,8 @@ namespace Cdk
                     ["BucketName"] = s3SiteBucket.BucketName,
                     ["ResultFolderPath"] = result_folder_path,
                     ["AllowedExtensions"] = allowed_extensions,
-                    ["AllowedTotalFiles"] = allowed_total_files.ToString()
+                    ["AllowedTotalFiles"] = allowed_total_files.ToString(),
+                    ["AllowedFileSize"] = allowed_file_size.ToString()
                 }
             });
 

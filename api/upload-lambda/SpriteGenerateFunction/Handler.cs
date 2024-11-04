@@ -15,13 +15,15 @@ internal class Handler
     private readonly ILambdaLogger _logger;
     private readonly string _allowedExtensions;
     private readonly int _allowedTotalFiles;
+    private readonly int _allowedFileSize;
 
     internal Handler(IConfiguration configuration, ILambdaLogger logger)
     {
         _logger = logger;
         _allowedExtensions = configuration["AllowedExtensions"] ?? throw new ArgumentNullException(nameof(configuration) + ".AllowedExtensions");
         _allowedTotalFiles = int.Parse(configuration["AllowedTotalFiles"] ?? throw new ArgumentNullException(nameof(configuration) + ".AllowedTotalFiles"));
-        
+        _allowedFileSize = int.Parse(configuration["AllowedFileSize"] ?? throw new ArgumentNullException(nameof(configuration) + ".AllowedFileSize"));
+
         var resultFolderPath = configuration["ResultFolderPath"] ?? throw new ArgumentNullException(nameof(configuration) + ".ResultFolderPath");
         var bucketName = configuration["BucketName"] ?? throw new ArgumentNullException(nameof(configuration) + ".BucketName");
         _s3DataAccess = new S3FileDao(bucketName, resultFolderPath);
@@ -71,6 +73,11 @@ internal class Handler
             var file = fileStreams.ElementAt(i);
             using (var stream = file.Value)
             {
+                if (stream.Length > _allowedFileSize)
+                {
+                    return HttpResults.BadRequest("Sorry, but the file is too big");
+                }
+
                 stream.Position = 0;
                 var bitmap = SKBitmap.Decode(stream);
                 bitmaps.Add(i, bitmap);
@@ -98,7 +105,11 @@ internal class Handler
         {
             using (var zipArchive = ZipFileHelper.CreateZipArchive(zipStream))
             {
-                var encodeFormat = format == ConvertFormat.WebP ? SKEncodedImageFormat.Webp : SKEncodedImageFormat.Png;
+                var encodeFormat =
+                    format == ConvertFormat.Png ? SKEncodedImageFormat.Png :
+                    format == ConvertFormat.WebP ? SKEncodedImageFormat.Webp :
+                    SKEncodedImageFormat.Avif;
+
                 using (var imageStream = new MemoryStream())
                 {
                     image.Encode(encodeFormat, 100).SaveTo(imageStream);
