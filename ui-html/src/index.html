@@ -11,7 +11,9 @@
 
   <link rel="icon" href="favicon.ico" />
   <link rel="stylesheet" href="./o_0.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/gradient-dark.min.css">
+  <link rel="stylesheet" href="">
+  <link rel="preload" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/gradient-dark.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/gradient-dark.min.css"></noscript>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/css.min.js"></script>
@@ -394,27 +396,6 @@
       </div>
     </div>
   </main>
-  <!-- FOOTER -->
-  <footer class="w-full mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="py-6 border-t border-gray-200 dark:border-neutral-700">
-      <div class="flex flex-wrap justify-between items-center gap-2">
-        <div>
-          <p class="text-xs text-gray-600 dark:text-neutral-400">
-            © 2024 _fastFoodCoding
-          </p>
-        </div>
-        <ul class="flex flex-wrap items-center">
-          <li class="inline-block pe-4 text-xs">
-            <a class="text-xs text-gray-500 underline hover:text-gray-800 hover:decoration-2 focus:outline-none focus:decoration-2 dark:text-neutral-500 dark:hover:text-neutral-400"
-              href="#">
-              Github
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </footer>
-  <!-- END FOOTER -->
+  {{ footer }}
 </body>
-
 </html>
