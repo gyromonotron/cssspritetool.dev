@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="{{ metadata.language or global.language }}">
+    <head>
+        <title>{{ title or metadata.title }}</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="{{ metadata.description or global.description }}">
+        <meta name="keywords" content="{{ metadata.keywords or global.keywords }}">
+        <meta name="author" content="{{ metadata.author or global.author }}"/>
+        <meta name="generator" content="{{ eleventy.generator }}">
+        <link rel="icon" type="image/png" href="/img/favicon-96x96.png" sizes="96x96"/>
+        <link rel="icon" type="image/svg+xml" href="/img/favicon.svg"/>
+        <link rel="shortcut icon" href="/img/favicon.ico"/>
+        <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
+        <meta name="apple-mobile-web-app-title" content="{{metadata.title or global.title }}"/>
+        <link rel="manifest" href="/site.webmanifest"/>
+        <link rel="stylesheet" href="/o_0.css">
+
+        {% for noscript in noscripts %}
+            <noscript>{{ noscript }}</noscript>
+        {% endfor %}
+    </head>
+    <body class="--font-geist-sans --font-geist-mono antialiased">
+        <main id="content">
+            {{ content | safe }}
+        </main>
+        {% include "partials/footer.njk" %}
+        {% for script in scripts %}
+            <script defer src="{{ script }}"></script>
+        {% endfor %}
+    </body>
+</html>

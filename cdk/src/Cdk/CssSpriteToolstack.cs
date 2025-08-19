@@ -40,7 +40,7 @@ namespace Cdk
                     new LifecycleRule
                     {
                         Id = "DeleteObjectsAfterOneDay",
-                        Prefix = "r/",
+                        Prefix = "result/",
                         Enabled = true,
                         Expiration = Duration.Days(1)
                     }

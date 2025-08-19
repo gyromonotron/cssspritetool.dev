@@ -2,6 +2,8 @@ const htmlmin = require("html-minifier");
 
 module.exports = function (config) {
     config.addPassthroughCopy('./src/img');
+    config.addPassthroughCopy('./src/site.webmanifest');
+    config.addPassthroughCopy('./src/robots.txt');
     config.setServerOptions({
       watch: ['./_site/o_0.css']
     });

@@ -2,8 +2,7 @@
 module.exports = {
   darkMode: 'media',
   content: [
-    "./src/*.html",
-    "./src/js/*.js",
+    "./src/**/*.{html,njk,md,liquid,js}",
   ],
   theme: {
     extend: {
