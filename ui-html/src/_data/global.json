@@ -1,5 +1,11 @@
 {
     "language": "en",
     "author": "Vitalii Samarskyi",
-    "siteUrl": "https://cssspritetool.dev/"
+    "siteUrl": "https://cssspritetool.dev",
+    "title": "CSS Sprite Generator",
+    "description": "FREE Online tool for generating CSS sprites. Supports WEBP, PNG, JPEG, GIF, BMP, HEIC image formats. Merge multiple images into a sprite fast and easy.",
+    "keywords": "css,sprite,image,generator,free,tool,online,webp,png",
+    "ogImage": "/img/web-app-manifest-512x512.png",
+    "ogImageWidth": "512",
+    "ogImageHeight": "512"
 }

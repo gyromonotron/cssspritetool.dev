@@ -1,0 +1,21 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": {{ pageTitle | dump | safe }},
+  "description": {{ pageDescription | dump | safe }},
+  "url": {{ (siteBase + page.url) | dump | safe }},
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": {{ (author or global.author) | dump | safe }}
+  }
+}
+</script>

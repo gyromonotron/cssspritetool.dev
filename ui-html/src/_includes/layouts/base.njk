@@ -1,26 +1,59 @@
 <!doctype html>
-<html lang="{{ metadata.language or global.language }}">
+<html lang="{{ global.language }}">
     <head>
-        <title>{{ title or metadata.title }}</title>
+        {% set pageTitle = title or global.title %}
+        {% set pageDescription = description or global.description %}
+        {% set pageKeywords = keywords or global.keywords %}
+        {% set siteBase = global.siteUrl %}
+        {% set canonical = canonicalUrl or (siteBase + page.url) %}
+        {% set imagePath = ogImage or global.ogImage %}
+        {% set imageUrl = siteBase + imagePath %}
+
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="{{ metadata.description or global.description }}">
-        <meta name="keywords" content="{{ metadata.keywords or global.keywords }}">
-        <meta name="author" content="{{ metadata.author or global.author }}"/>
+        <title>{{ pageTitle }}</title>
+        <meta name="description" content="{{ pageDescription }}">
+        <meta name="keywords" content="{{ pageKeywords }}">
+        <meta name="author" content="{{ author or global.author }}">
+        {% if robots %}
+        <meta name="robots" content="{{ robots }}">
+        {% endif %}
+        <link rel="canonical" href="{{ canonical }}">
+
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ global.title }}">
+        <meta property="og:title" content="{{ pageTitle }}">
+        <meta property="og:description" content="{{ pageDescription }}">
+        <meta property="og:url" content="{{ canonical }}">
+        <meta property="og:image" content="{{ imageUrl }}">
+        <meta property="og:image:width" content="{{ ogImageWidth or global.ogImageWidth }}">
+        <meta property="og:image:height" content="{{ ogImageHeight or global.ogImageHeight }}">
+        <meta property="og:locale" content="en_US">
+
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="{{ pageTitle }}">
+        <meta name="twitter:description" content="{{ pageDescription }}">
+        <meta name="twitter:image" content="{{ imageUrl }}">
+
         <meta name="generator" content="{{ eleventy.generator }}">
         <link rel="icon" type="image/png" href="/img/favicon-96x96.png" sizes="96x96"/>
         <link rel="icon" type="image/svg+xml" href="/img/favicon.svg"/>
         <link rel="shortcut icon" href="/img/favicon.ico"/>
         <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png"/>
-        <meta name="apple-mobile-web-app-title" content="{{metadata.title or global.title }}"/>
+        <meta name="apple-mobile-web-app-title" content="{{ pageTitle }}"/>
         <link rel="manifest" href="/site.webmanifest"/>
         <link rel="stylesheet" href="/o_0.css">
+
+        {% if schema %}
+        {% include "partials/schema-webapp.njk" %}
+        {% endif %}
 
         {% for noscript in noscripts %}
             <noscript>{{ noscript }}</noscript>
         {% endfor %}
     </head>
     <body class="--font-geist-sans --font-geist-mono antialiased">
+        {% include "partials/promo-banner.njk" %}
         <main id="content">
             {{ content | safe }}
         </main>
